@@ -25,11 +25,28 @@ $form_name = "product-form";
         <h3 class="text-center"><?= $args['title'] ?></h3>
 
         <?php foreach($model->fields() as $key => $properties):
-            $error = $model->errors($key); ?>
+            $error = $model->errors($key);
+            $type = $properties['type'];
+        ?>
             <div class="form-group <?= $error ? 'has-error' : ''?>">
                 <label class="control-label" for='<?= "$form_name-$key" ?>'><?= $key ?></label>
                 <input
-                        type="<?= $properties['type'] ?>"
+                        type="<?= $type ?>"
+                        <?php
+                        if ($type == 'number') {
+                            $min = $properties['min'] ?? null;
+                            $max = $properties['max'] ?? null;
+                            if ($min !== null) {
+                                echo "min='$min'";
+                            }
+                            if ($max !== null) {
+                                echo "min='$max'";
+                            }
+                            $prec = $properties['precision'] ?? null;
+                            $step = $prec === null ? "any" : (string)(pow(10., -$prec));
+                            echo "step='$step'";
+                        }
+                        ?>
                         id='<?= "$form_name-$key" ?>'
                         class="form-control"
                         name='<?= $key ?>'
