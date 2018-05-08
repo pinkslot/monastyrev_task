@@ -68,17 +68,17 @@ class Model {
                         }
                         $this->$field = floatval($this->$field);
 
-                        if (($prec = $properties['precision']) !== null) {
+                        if (($prec = ($properties['precision']) ?? null) !== null) {
                             $this->$field = round($this->$field, $prec);
                         }
 
-                        if (($min = $properties['min']) !== null) {
+                        if (($min = ($properties['min']) ?? null) !== null) {
                             if ($this->$field < $min) {
                                 throw new ValidationException("$field must be greater or equal to $min");
                             }
                         }
 
-                        if (($max = $properties['max']) !== null) {
+                        if (($max = ($properties['max']) ?? null) !== null) {
                             if ($this->$field > $max) {
                                 throw new ValidationException("$field must be less or equal to $max");
                             }
@@ -86,7 +86,7 @@ class Model {
                         break;
                     case 'date':
                         $date = date_parse($this->$field);
-                        if (!$date['year'] or !$date['month'] or !$date['day']) {
+                        if ($date['warnings'] || $date['errors']) {
                             throw new ValidationException("$field must be a date");
                         }
                         break;
@@ -196,21 +196,53 @@ SQL
         return $data ? new static($data) : null;
     }
 
+    private static function construct_query_cond(array $field_cond, array $match_cond) {
+        $cond_parts = [];
+        $cond_params = [];
+
+        if ($field_cond) {
+            foreach ($field_cond as $field => $value) {
+                array_push($cond_parts, "$field = :field_$field");
+                $cond_params[":field_$field"] = $value;
+            }
+        }
+
+        if ($match_cond) {
+            foreach ($match_cond as $field => $values) {
+                array_push($cond_parts, "MATCH ($field) AGAINST (:match_$field IN BOOLEAN  MODE)");
+
+                $values = array_map(function($v) { return "+$v*"; }, $values);
+                $values = "'" . join(' ', $values) . "'";
+                $cond_params[":match_$field"] = $values;
+            }
+        }
+
+        return [
+            'query' => " WHERE " . join(" AND ", $cond_parts),
+            'params' => $cond_params,
+        ];
+    }
+
     /**
      * @param $cond array
      * @return static[]
      */
-    public static function findAll($cond = []) {
+    public static function findAll(array $field_cond = [], array $match_cond = []) {
+
         $table = static::$_table;
-        $query = "SELECT * FROM  $table;";
-        if ($cond) {
-            $query .= "WHERE " . join(
-                " AND ",
-                array_map(function($f) { return "$f = :$f"; }, array_keys($cond))
-            );
+        $query = "SELECT * FROM  $table";
+
+        $params = [];
+        if ($field_cond || $match_cond) {
+            $cond = static::construct_query_cond($field_cond, $match_cond);
+            $query .= $cond['query'];
+            $params = $cond['params'];
         }
+
+        $query .= ';';
+
         $stmt = App::app()->db()->prepare($query);
-        if (!$stmt->execute($cond)) {
+        if (!$stmt->execute($params)) {
             throw new DbException($stmt);
         }
 

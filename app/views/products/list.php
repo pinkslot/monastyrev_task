@@ -16,6 +16,26 @@ $app = \app\App::app();
 <div class="container">
     <h3 class="text-center">List of Products</h3>
 
+    <form action="/products/index" method="GET">
+        <div class="row col-xs-6 col-md-4 pull-right">
+            <div class="input-group">
+                <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Search"
+                        name="query"
+                        id="search-form-query"
+                        value="<?=$args['query']?>"
+                />
+                <div class="input-group-btn">
+                    <button class="btn btn-primary" type="submit">
+                        <span class="glyphicon glyphicon-search"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+
     <table class="table">
         <thead>
             <tr>

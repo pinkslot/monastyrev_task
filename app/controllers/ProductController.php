@@ -48,8 +48,16 @@ class ProductController extends Controller {
     }
 
     public function action_index() {
+        $query = App::app()->get_params('query');
+
+        $words = explode(' ', $query);
+        $words = array_map(function($w) { return trim($w); }, $words);
+
         return $this->render_view('list.php',[
-            'models' => Product::findAll()
+            'models' => Product::findAll([], [
+                'name' => $words,
+            ]),
+            'query' => $query,
         ]);
     }
 }

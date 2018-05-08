@@ -16,6 +16,8 @@ class ConfKeyException extends Exception {
 class App {
     private $_params = [];
     private $_conf = [];
+
+//    Static field instead of static local var to use one instance for all hierarchy
     protected static $_inst = null;
 
     protected function _init_params() {
@@ -88,14 +90,12 @@ class App {
     }
 
     public static function app(): self {
+        if (!static::$_inst) {
+            static::$_inst = new static();
+        }
         return static::$_inst;
     }
 
-//    I use additional init method for this singleton class
-//  to be able call necessary child constructor
-    public static function init() {
-        return static::$_inst = new static();
-    }
 
     private function __construct()
     {
