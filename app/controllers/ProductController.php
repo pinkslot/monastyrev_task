@@ -8,7 +8,10 @@ use core\controllers\Controller;
 
 class ProductController extends Controller {
     protected static function render_view($view, array $args) {
-        return static::render(ROOT . '\app\views\products\\' . $view, $args);
+        return static::render(
+             join(DIRECTORY_SEPARATOR, [ROOT, 'app', 'views', 'products', $view]),
+            $args
+        );
     }
 
     public function action_delete() {
