@@ -94,7 +94,6 @@ class TableRowControl {
 
 class TableControl {
     private static __pageSize__ = 10;
-    private static __colCount__ = 5;
 
     private _url_prefix: string;
     private _host: HTMLTableElement;

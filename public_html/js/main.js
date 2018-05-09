@@ -54,7 +54,7 @@ var TableRowControl = /** @class */ (function () {
         this.clear();
         this.fill(data);
     };
-    TableRowControl.prototype["delete"] = function () {
+    TableRowControl.prototype.delete = function () {
         this._host.remove();
     };
     return TableRowControl;
@@ -99,9 +99,9 @@ var TableControl = /** @class */ (function () {
                 offset: this._offset,
                 limit: TableControl.__pageSize__,
                 like_query: getUrlParameter('like_query'),
-                match_query: getUrlParameter('match_query')
+                match_query: getUrlParameter('match_query'),
             },
-            dataType: "json"
+            dataType: "json",
         }).done(function (rows) {
             rows.forEach(function (r) {
                 _this.add_row(r);
@@ -119,12 +119,12 @@ var TableControl = /** @class */ (function () {
                 url: this._url_prefix + '/delete',
                 type: "POST",
                 data: {
-                    id: id
+                    id: id,
                 },
-                dataType: "json"
+                dataType: "json",
             }).done(function (reply) {
                 if (reply.success) {
-                    _this._rows[id]["delete"]();
+                    _this._rows[id].delete();
                     delete _this._rows[id];
                 }
                 else {
@@ -147,7 +147,6 @@ var TableControl = /** @class */ (function () {
         }
     };
     TableControl.__pageSize__ = 10;
-    TableControl.__colCount__ = 5;
     return TableControl;
 }());
 $(function () {
