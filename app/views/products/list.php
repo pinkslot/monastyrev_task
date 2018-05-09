@@ -88,15 +88,17 @@ $app = \app\App::app();
         </thead>
 
         <tbody>
-            <tr>
-                <td class="loading-button-host" colspan = '<?= count(Product::fields()) + 1 ?>'>
-                    <button class="btn btn-primary loading-button">
-                        Load More
-                    </button>
-                </td>
-            </tr>
         </tbody>
     </table>
+    <div class="row">
+        <div class="centered">
+            <button class="btn btn-primary loading-button">
+                Load More
+            </button>
+        </div>
+
+    </div>
 </div>
+
 </body>
 </html>

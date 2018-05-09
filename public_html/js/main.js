@@ -71,7 +71,7 @@ var TableControl = /** @class */ (function () {
     }
     TableControl.prototype.init_loading_button = function () {
         var _this = this;
-        var $but = $(this._host).find('.loading-button');
+        var $but = $('.loading-button');
         if ($but.length) {
             $but.click(function () {
                 _this.load_next();
@@ -103,7 +103,6 @@ var TableControl = /** @class */ (function () {
             },
             dataType: "json"
         }).done(function (rows) {
-            rows.reverse();
             rows.forEach(function (r) {
                 _this.add_row(r);
             });
@@ -142,7 +141,7 @@ var TableControl = /** @class */ (function () {
         }
         else {
             var row_host = document.createElement('tr');
-            this._table_body.insertBefore(row_host, this._table_body.firstChild);
+            this._table_body.appendChild(row_host);
             this._rows[data.id] = new TableRowControl(this, row_host, data);
             this._offset++;
         }

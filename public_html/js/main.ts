@@ -118,7 +118,7 @@ class TableControl {
     }
 
     private init_loading_button() {
-        let $but = $(this._host).find('.loading-button');
+        let $but = $('.loading-button');
         if ($but.length) {
             $but.click(() => {
                 this.load_next();
@@ -152,7 +152,6 @@ class TableControl {
             },
             dataType: "json",
         }).done((rows: TableRowData[]) => {
-            rows.reverse();
             rows.forEach((r: TableRowData) => {
                 this.add_row(r);
             });
@@ -192,7 +191,7 @@ class TableControl {
         }
         else {
             let row_host = document.createElement('tr');
-            this._table_body.insertBefore(row_host, this._table_body.firstChild);
+            this._table_body.appendChild(row_host);
             this._rows[data.id] = new TableRowControl(this, row_host, data);
             this._offset++;
         }
@@ -205,5 +204,4 @@ $(() => {
     if (typeof run === 'function') {
         run();
     }
-
 });
