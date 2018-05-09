@@ -8,8 +8,9 @@ function getUrlParameter(sParam) {
     }
 }
 var TableRowControl = /** @class */ (function () {
-    function TableRowControl(host, data) {
+    function TableRowControl(table, host, data) {
         this._host = host;
+        this._table = table;
         this.fill(data);
     }
     TableRowControl.prototype.clear = function () {
@@ -17,16 +18,44 @@ var TableRowControl = /** @class */ (function () {
             this._host.removeChild(this._host.firstChild);
         }
     };
+    TableRowControl.prototype.create_toolbar = function (toolbar_host, id) {
+        var _this = this;
+        // TODO: implement ajax updating
+        $(toolbar_host).append($('<a title="update" href="/products/update?id=' + id + '">' +
+            '<span class="glyphicon glyphicon-pencil""/>' +
+            '</a>'));
+        var $remove_btn = $('<a title="delete" style="cursor: pointer;">' +
+            '<span class="glyphicon glyphicon-trash"/>' +
+            '</a>');
+        $(toolbar_host).append($remove_btn);
+        $remove_btn.click(function () {
+            _this._table.delete_row(id);
+        });
+    };
     TableRowControl.prototype.fill = function (data) {
+        // first td for auto css serial
+        var td = document.createElement('td');
+        this._host.appendChild(td);
         for (var key in data) {
-            var td = document.createElement('td');
-            this._host.appendChild(td);
-            td.innerText = data[key];
+            var td_1 = document.createElement('td');
+            this._host.appendChild(td_1);
+            if (key == 'id') {
+                var toolbar_host = document.createElement('span');
+                td_1.style.minWidth = '50px';
+                td_1.appendChild(toolbar_host);
+                this.create_toolbar(toolbar_host, data[key]);
+            }
+            else {
+                td_1.innerText = data[key];
+            }
         }
     };
     TableRowControl.prototype.update = function (data) {
         this.clear();
         this.fill(data);
+    };
+    TableRowControl.prototype["delete"] = function () {
+        this._host.remove();
     };
     return TableRowControl;
 }());
@@ -84,6 +113,29 @@ var TableControl = /** @class */ (function () {
             _this.set_on_loading(false);
         });
     };
+    TableControl.prototype.delete_row = function (id) {
+        var _this = this;
+        if (this._rows[id]) {
+            $.ajax({
+                url: this._url_prefix + '/delete',
+                type: "POST",
+                data: {
+                    id: id
+                },
+                dataType: "json"
+            }).done(function (reply) {
+                if (reply.success) {
+                    _this._rows[id]["delete"]();
+                    delete _this._rows[id];
+                }
+                else {
+                    $('.alert').text("Error occurred while deleting row").show();
+                }
+            }).fail(function () {
+                $('.alert').text("Error occurred while deleting row").show();
+            });
+        }
+    };
     TableControl.prototype.add_row = function (data) {
         if (data.id in this._rows) {
             this._rows[data.id].update(data);
@@ -91,7 +143,7 @@ var TableControl = /** @class */ (function () {
         else {
             var row_host = document.createElement('tr');
             this._table_body.insertBefore(row_host, this._table_body.firstChild);
-            this._rows[data.id] = new TableRowControl(row_host, data);
+            this._rows[data.id] = new TableRowControl(this, row_host, data);
             this._offset++;
         }
     };
@@ -100,5 +152,7 @@ var TableControl = /** @class */ (function () {
     return TableControl;
 }());
 $(function () {
-    run();
+    if (typeof run === 'function') {
+        run();
+    }
 });

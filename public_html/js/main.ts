@@ -28,9 +28,11 @@ interface ProductTableRowData extends TableRowData {
 
 class TableRowControl {
     private _host: HTMLTableRowElement;
+    private _table: TableControl;
 
-    constructor(host: HTMLTableRowElement, data: TableRowData) {
+    constructor(table: TableControl, host: HTMLTableRowElement, data: TableRowData) {
         this._host = host;
+        this._table = table;
         this.fill(data);
     }
 
@@ -40,17 +42,52 @@ class TableRowControl {
         }
     }
 
+    private create_toolbar(toolbar_host: HTMLElement, id: string) {
+        // TODO: implement ajax updating
+        $(toolbar_host).append($(
+            '<a title="update" href="/products/update?id=' + id + '">' +
+                '<span class="glyphicon glyphicon-pencil""/>' +
+            '</a>'
+        ));
+
+        let $remove_btn = $(
+            '<a title="delete" style="cursor: pointer;">' +
+               '<span class="glyphicon glyphicon-trash"/>' +
+            '</a>'
+        );
+        $(toolbar_host).append($remove_btn);
+        $remove_btn.click(() => {
+            this._table.delete_row(id);
+        });
+    }
+
     private fill(data: TableRowData) {
+        // first td for auto css serial
+        let td = document.createElement('td');
+        this._host.appendChild(td);
+
         for (let key in data) {
             let td = document.createElement('td');
             this._host.appendChild(td);
-            td.innerText = data[key];
+            if (key == 'id') {
+                let toolbar_host = document.createElement('span');
+                td.style.minWidth = '50px';
+                td.appendChild(toolbar_host);
+                this.create_toolbar(toolbar_host, data[key]);
+            }
+            else {
+                td.innerText = data[key];
+            }
         }
     }
 
     public update(data: TableRowData) {
         this.clear();
         this.fill(data);
+    }
+
+    public delete() {
+        this._host.remove();
     }
 }
 
@@ -126,14 +163,37 @@ class TableControl {
         });
     }
 
-    private add_row(data: TableRowData) {
+    public delete_row(id: string) {
+        if (this._rows[id]) {
+            $.ajax({
+                url: this._url_prefix + '/delete',
+                type: "POST",
+                data: {
+                    id: id,
+                },
+                dataType: "json",
+            }).done((reply: any) => {
+                if (reply.success) {
+                    this._rows[id].delete();
+                    delete this._rows[id];
+                }
+                else {
+                    $('.alert').text("Error occurred while deleting row").show();
+                }
+            }).fail(() => {
+                $('.alert').text("Error occurred while deleting row").show();
+            });
+        }
+    }
+
+    public add_row(data: TableRowData) {
         if (data.id in this._rows) {
             this._rows[data.id].update(data);
         }
         else {
             let row_host = document.createElement('tr');
             this._table_body.insertBefore(row_host, this._table_body.firstChild);
-            this._rows[data.id] = new TableRowControl(row_host, data);
+            this._rows[data.id] = new TableRowControl(this, row_host, data);
             this._offset++;
         }
     }
@@ -142,5 +202,8 @@ class TableControl {
 declare var run: () => void;
 
 $(() => {
-    run();
+    if (typeof run === 'function') {
+        run();
+    }
+
 });

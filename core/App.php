@@ -27,6 +27,9 @@ class App {
             'post' => $_POST,
             'files' => $_FILES,
             'method' => $_SERVER['REQUEST_METHOD'],
+            'ajax' =>
+                $_SERVER['HTTP_X_REQUESTED_WITH'] and
+                strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest',
         ];
     }
 
@@ -69,6 +72,12 @@ class App {
     public function get_params(string $key = null) {
         $get = $this->_params['get'] ?? [];
         return $key === null ? $get : $get[$key] ?? null;
+    }
+
+    public function method_params(string $key = null) {
+        $method = strtolower($this->_params['method']);
+        $method_params = $this->_params[$method] ?? [];
+        return $key === null ? $method_params : $method_params[$key] ?? null;
     }
 
     public function conf($key = null, $exception = false) {

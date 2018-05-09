@@ -12,8 +12,13 @@ class ProductController extends Controller {
     }
 
     public function action_delete() {
-        $model = $this->findOr404(Product::class, App::app()->get_params('id'));
-        $model->delete();
+        $model = $this->findOr404(Product::class, App::app()->method_params('id'));
+        $result = $model->delete();
+        if (App::app()->params('ajax')) {
+            return json_encode([
+                'success' => $result
+            ]);
+        }
         $this->redirect('/products/index');
     }
 

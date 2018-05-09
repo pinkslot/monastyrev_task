@@ -27,6 +27,8 @@ $app = \app\App::app();
     <?php include dirname(dirname(__FILE__)) . '/layouts/alert.php'?>
     <h3 class="text-center">List of Products</h3>
 
+    <div class="row">
+    <div>
     <form action="/products/index" method="GET">
         <div class="row col-xs-6 col-md-4 pull-right">
             <div class="input-group">
@@ -46,6 +48,8 @@ $app = \app\App::app();
             </div>
         </div>
     </form>
+    </div>
+    <div>
     <form action="/products/index" method="GET">
         <div class="row col-xs-6 col-md-4 pull-right">
             <div class="input-group">
@@ -65,13 +69,18 @@ $app = \app\App::app();
             </div>
         </div>
     </form>
-    <a class="btn btn-success" title="create new" href="/products/create">
-        Create new
-    </a>
+    </div>
+    <div>
+        <a class="btn btn-success" title="create new" href="/products/create">
+            Create new
+        </a>
+    </div>
+    </div>
 
-    <table class="table" id="product-table">
+    <table class="table css-serial" id="product-table">
         <thead>
             <tr>
+                <th>#</th>
             <?php foreach(Product::fields() as $key => $value): ?>
                 <th> <?= lcfirst($key) ?> </th>
             <?php endforeach; ?>
