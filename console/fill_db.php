@@ -16,14 +16,16 @@ function pick_name() {
         'от геморроя', 'для естественных ощущений',
     ];
     $for_whom = ['для новорождённых', 'для детей', 'для всех возрастов',
-        'для беременных', 'для слабослышащих',
+        'для беременных', 'для слабослышащих', 'для школьников'
     ];
+    $count = ['грамм', 'штук', 'милилитров', 'пачек'];
 
     return join(' ', [
         $what[array_rand($what)],
         $prop[array_rand($prop)],
         $for_what[array_rand($for_what)],
         $for_whom[array_rand($for_whom)],
+        rand(10, 99) . $count[array_rand($count)],
     ]);
 }
 
@@ -31,13 +33,15 @@ function pick_date() {
     return rand(2017, 2030) . '-' . rand(1, 12) . '-' . rand(1, 28);
 }
 
-define('COUNT', 500);
 
 $producers = ['Джонсон & Джонсон', 'Bayer', 'Roche', 'Durex', 'Фрутоняня'];
 $country = ['США', 'Швейцария', 'Малороссия', 'Германия', 'Япония', 'Россия'];
 
 App::app();
-for ($i = 0; $i < COUNT; $i++) {
+$count = $argv[1] ?? 5000;
+
+// TODO: multiple row sql stmt
+for ($i = 0; $i < $count; $i++) {
     (new Product([
         'name' => pick_name(),
         'price' => mt_rand() / mt_getrandmax() * 100.,

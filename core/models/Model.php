@@ -3,6 +3,7 @@ namespace core\models;
 
 use Exception;
 use \core\App;
+use JsonSerializable;
 use \PDO;
 use PDOStatement;
 
@@ -21,7 +22,7 @@ class DbException extends Exception {
     }
 }
 
-class Model {
+class Model implements JsonSerializable {
     protected static $_table = '';
     public static function table() {
         return static::$_table;
@@ -196,24 +197,38 @@ SQL
         return $data ? new static($data) : null;
     }
 
-    private static function construct_query_cond(array $field_cond, array $match_cond) {
+    private static function construct_query_cond(array $field_cond, array $match_cond, array $like_cond) {
         $cond_parts = [];
         $cond_params = [];
 
         if ($field_cond) {
             foreach ($field_cond as $field => $value) {
-                array_push($cond_parts, "$field = :field_$field");
-                $cond_params[":field_$field"] = $value;
+                $placeholder = ":field_$field";
+                array_push($cond_parts, "$field = $placeholder");
+                $cond_params[$placeholder] = $value;
             }
         }
 
         if ($match_cond) {
             foreach ($match_cond as $field => $values) {
-                array_push($cond_parts, "MATCH ($field) AGAINST (:match_$field IN BOOLEAN  MODE)");
+                $placeholder = ":match_$field";
+                array_push($cond_parts, "MATCH ($field) AGAINST ($placeholder IN BOOLEAN  MODE)");
 
                 $values = array_map(function($v) { return "+$v*"; }, $values);
                 $values = "'" . join(' ', $values) . "'";
-                $cond_params[":match_$field"] = $values;
+                $cond_params[$placeholder] = $values;
+            }
+        }
+
+        if ($like_cond) {
+            foreach ($like_cond as $field => $values) {
+                $i = 0;
+                foreach ($values as $value) {
+                    $placeholder = ":like_$field$i";
+                    array_push($cond_parts, "$field LIKE $placeholder");
+                    $cond_params[$placeholder] = "%$value%";
+                    $i++;
+                }
             }
         }
 
@@ -227,19 +242,33 @@ SQL
      * @param $cond array
      * @return static[]
      */
-    public static function findAll(array $field_cond = [], array $match_cond = []) {
+    public static function findAll(array $cond, $limit, $offset) {
+        $field_cond = $cond['field'] ?? [];
+        $match_cond = $cond['match'] ?? [];
+        $like_cond = $cond['like'] ?? [];
 
         $table = static::$_table;
-        $query = "SELECT * FROM  $table";
+        $query = "SELECT * FROM $table";
 
         $params = [];
-        if ($field_cond || $match_cond) {
-            $cond = static::construct_query_cond($field_cond, $match_cond);
+        if ($field_cond || $match_cond || $like_cond) {
+            $cond = static::construct_query_cond($field_cond, $match_cond, $like_cond);
             $query .= $cond['query'];
             $params = $cond['params'];
         }
 
+        $query .= ' ORDER BY id DESC';
+        if ($limit) {
+            $query .= " LIMIT $limit";
+        }
+        if ($offset) {
+            $query .= " OFFSET $offset";
+        }
         $query .= ';';
+
+//        print_r($params);
+//        echo $query;
+//        exit;
 
         $stmt = App::app()->db()->prepare($query);
         if (!$stmt->execute($params)) {
@@ -275,6 +304,15 @@ SQL
 //          Set $this->$field === null if $data[$field] is unfilled
             $this->$field = $data[$field] ?? null;
         }
+    }
+
+    public function jsonSerialize() {
+        $result = [];
+        foreach (static::fields() as $field => $properties) {
+            $result[$field] = $this->$field;
+        }
+        $result['id'] = $this->id();
+        return $result;
     }
 
     public function __construct($data = []) {

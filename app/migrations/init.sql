@@ -5,7 +5,8 @@ CREATE TABLE products
     price decimal(19,2) NOT NULL,
     producer varchar(256),
     country varchar(256),
-    expired_at date
+    expired_at date,
+    FULLTEXT KEY (name)
 );
 CREATE UNIQUE INDEX products_id_uindex ON products (id);
 CREATE INDEX products_name_index ON products (name);

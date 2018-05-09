@@ -21,6 +21,8 @@ $form_name = "product-form";
 ?>
 
 <div class="container">
+    <?php include dirname(dirname(__FILE__)) . '/layouts/alert.php'?>
+
     <form class="form" method="POST">
         <h3 class="text-center"><?= $args['title'] ?></h3>
 
@@ -51,7 +53,7 @@ $form_name = "product-form";
                         class="form-control"
                         name='<?= $key ?>'
                         aria-required="<?= $properties['required'] ?? false ? 1 : 0 ?>"
-                        value=<?= $model->$key ?>
+                        value="<?= $model->$key ?>"
                 >
                 <?php if ($error): ?>
                     <small class="text-danger">

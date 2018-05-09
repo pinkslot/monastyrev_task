@@ -47,17 +47,29 @@ class ProductController extends Controller {
         ]);
     }
 
-    public function action_index() {
-        $query = App::app()->get_params('query');
+    public function action_list() {
+        $like_query = App::app()->get_params('like_query');
+        $match_query = App::app()->get_params('match_query');
 
-        $words = explode(' ', $query);
-        $words = array_map(function($w) { return trim($w); }, $words);
+        $like_words = explode(' ', $like_query);
+        $like_words = array_filter(array_map(function($w) { return trim($w); }, $like_words));
+
+        $match_words = explode(' ', $match_query);
+        $match_words = array_filter(array_map(function($w) { return trim($w); }, $match_words));
+
+        return json_encode(Product::findAll([
+            'match' => $match_words ? ['name' => $match_words] : [],
+            'like' => $like_words ? ['name' => $like_words] : [],
+        ], App::app()->get_params('limit'), App::app()->get_params('offset')));
+    }
+
+    public function action_index() {
+        $like_query = App::app()->get_params('like_query');
+        $match_query = App::app()->get_params('match_query');
 
         return $this->render_view('list.php',[
-            'models' => Product::findAll([], [
-                'name' => $words,
-            ]),
-            'query' => $query,
+            'match_query' => $match_query,
+            'like_query' => $like_query,
         ]);
     }
 }

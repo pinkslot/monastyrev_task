@@ -1,0 +1,21 @@
+.loading-button-host {
+    text-align: center;
+}
+.loading-button.on-loading,
+.loading-button.on-loading:hover,
+.loading-button.on-loading:active {
+    background-image:url('/images/loading.svg');
+    border-style:none;
+    color: transparent;
+    text-decoration: none;
+    background-color:transparent !important;
+    background-repeat: no-repeat;
+    background-size: 80%;
+    background-position: 10px;
+}
+
+
+.alert {
+    z-index: 10;
+    opacity: 60%;
+}
