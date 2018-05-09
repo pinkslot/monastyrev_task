@@ -8,7 +8,7 @@ function getUrlParameter(sParam) {
         sParameterName = sURLVariables[i].split('=');
 
         if (sParameterName[0] === sParam) {
-            return sParameterName[1] === undefined ? true : sParameterName[1].replace('+', ' ');
+            return sParameterName[1] === undefined ? true : sParameterName[1].split('+').join(' ');
         }
     }
 }
