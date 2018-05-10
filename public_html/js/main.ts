@@ -154,6 +154,7 @@ class TableControl {
             rows.forEach((r: TableRowData) => {
                 this.add_row(r);
             });
+            $('html, body').animate({scrollTop:$(document).height()}, 'slow');
         }).fail(() => {
             $('.alert').text("Error occurred while loading data").show();
         }).always(() => {

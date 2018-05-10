@@ -106,6 +106,7 @@ var TableControl = /** @class */ (function () {
             rows.forEach(function (r) {
                 _this.add_row(r);
             });
+            $('html, body').animate({ scrollTop: $(document).height() }, 'slow');
         }).fail(function () {
             $('.alert').text("Error occurred while loading data").show();
         }).always(function () {
